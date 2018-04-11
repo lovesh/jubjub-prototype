@@ -128,7 +128,7 @@ fn main() {
 
     let mut total_mimc = Duration::new(0, 0);
 
-    const SAMPLES: u32 = 50;
+    const SAMPLES: u32 = 100;
 
     let constants = (0..MIMC_ROUNDS).map(|_| rng.gen()).collect::<Vec<Fr>>();
 
@@ -138,6 +138,7 @@ fn main() {
         let xl: Fr = rng.gen();
         let xr: Fr = rng.gen();
         let now = Instant::now();
+        let params = ProverStream::new("params").unwrap();
         let bits = (0..512).map(|_| rng.gen()).collect::<Vec<bool>>();
         let c = MiMCDemo::<Bls12> {
             xl: Some(xl),
