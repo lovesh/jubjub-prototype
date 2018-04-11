@@ -83,7 +83,7 @@ impl<'a> Circuit<Bls12> for DemoPedersenHashCircuit<'a> {
             bits.push(Bit::alloc(cs, *b)?);
         }
 
-        const DEPTH: usize = 20;
+        const DEPTH: usize = 100;
 
         for i in 0..DEPTH {
             let num = pedersen_hash(cs, &bits, self.generators, self.j)?;
@@ -128,7 +128,7 @@ fn main() {
 
     let mut total_mimc = Duration::new(0, 0);
 
-    const SAMPLES: u32 = 100;
+    const SAMPLES: u32 = 50;
 
     let constants = (0..MIMC_ROUNDS).map(|_| rng.gen()).collect::<Vec<Fr>>();
 
@@ -139,7 +139,6 @@ fn main() {
         let xr: Fr = rng.gen();
         let now = Instant::now();
         let params = ProverStream::new("params").unwrap();
-        let bits = (0..512).map(|_| rng.gen()).collect::<Vec<bool>>();
         let c = MiMCDemo::<Bls12> {
             xl: Some(xl),
             xr: Some(xr),
@@ -150,10 +149,10 @@ fn main() {
     }
 
     let avg_mimc = total_mimc / SAMPLES;
-    println!("total_mimc proving time: {:?}", total_mimc);
-    println!("average_mimc proving time: {:?}", avg_mimc);
+    println!("MiMC: Total proving time: {:?}", total_mimc);
+    println!("MiMC: Average proving time: {:?}", avg_mimc);
 
-    println!("Pedersen:Creating {} proofs and averaging the time spent creating them.", SAMPLES);
+    println!("Pedersen: Creating {} proofs and averaging the time spent creating them.", SAMPLES);
 
     let mut total_pedersen = Duration::new(0, 0);
     for _ in 0..SAMPLES {
@@ -168,6 +167,6 @@ fn main() {
         total_pedersen += now.elapsed();
     }
     let avg_pedersen = total_pedersen / SAMPLES;
-    println!("total_pedersen proving time: {:?}", total_pedersen);
-    println!("average_pedersen proving time: {:?}", avg_pedersen);
+    println!("Pedersen: Total proving time: {:?}", total_pedersen);
+    println!("Pedersen: Average proving time: {:?}", avg_pedersen);
 }
