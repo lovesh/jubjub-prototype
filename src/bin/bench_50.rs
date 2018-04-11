@@ -83,7 +83,7 @@ impl<'a> Circuit<Bls12> for DemoPedersenHashCircuit<'a> {
             bits.push(Bit::alloc(cs, *b)?);
         }
 
-        const DEPTH: usize = 100;
+        const DEPTH: usize = 20;
 
         for i in 0..DEPTH {
             let num = pedersen_hash(cs, &bits, self.generators, self.j)?;
@@ -126,12 +126,35 @@ fn main() {
 
     use std::time::{Duration,Instant};
 
-    let mut total = Duration::new(0, 0);
+    let mut total_mimc = Duration::new(0, 0);
 
     const SAMPLES: u32 = 50;
 
-    println!("Creating {} proofs and averaging the time spent creating them.", SAMPLES);
+    let constants = (0..MIMC_ROUNDS).map(|_| rng.gen()).collect::<Vec<Fr>>();
 
+    println!("MiMC: Creating {} proofs and averaging the time spent creating them.", SAMPLES);
+
+    for _ in 0..SAMPLES {
+        let xl: Fr = rng.gen();
+        let xr: Fr = rng.gen();
+        let now = Instant::now();
+        let bits = (0..512).map(|_| rng.gen()).collect::<Vec<bool>>();
+        let c = MiMCDemo::<Bls12> {
+            xl: Some(xl),
+            xr: Some(xr),
+            constants: &constants
+        };
+        create_random_proof::<Bls12, _, _, _>(c, params, rng).unwrap();
+        total_mimc += now.elapsed();
+    }
+
+    let avg_mimc = total_mimc / SAMPLES;
+    println!("total_mimc proving time: {:?}", total_mimc);
+    println!("average_mimc proving time: {:?}", avg_mimc);
+
+    println!("Pedersen:Creating {} proofs and averaging the time spent creating them.", SAMPLES);
+
+    let mut total_pedersen = Duration::new(0, 0);
     for _ in 0..SAMPLES {
         let now = Instant::now();
         let params = ProverStream::new("params").unwrap();
@@ -141,19 +164,9 @@ fn main() {
             &bits,
             &j
         ), params, rng).unwrap();
-        total += now.elapsed();
-        /*
-        let mut params = ProverStream::new("params").unwrap();
-
-        let vk2 = params.get_vk(1).unwrap();
-
-        let prepared_vk = prepare_verifying_key(&vk2);
-
-        assert!(verify_proof(&prepared_vk, &proof, |_| {
-            Ok(DemoPedersenHashCircuitInput)
-        }).unwrap());
-        */
+        total_pedersen += now.elapsed();
     }
-
-    println!("average proving time: {:?}", total / SAMPLES);
+    let avg_pedersen = total_pedersen / SAMPLES;
+    println!("total_pedersen proving time: {:?}", total_pedersen);
+    println!("average_pedersen proving time: {:?}", avg_pedersen);
 }

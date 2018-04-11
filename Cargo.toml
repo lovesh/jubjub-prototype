@@ -5,6 +5,8 @@ authors = ["Sean Bowe <ewillbefull@gmail.com>"]
 
 [dependencies]
 rand = "0.3"
+#bellman = { path = "../bellman", default-features = false}
+#pairing = { version = "0.11", default-features = false}
 
 [dependencies.pairing]
 version = "0.11"
@@ -13,6 +15,7 @@ default-features = false
 [dependencies.bellman]
 version = "0.0.3"
 default-features = false
+
 
 [features]
 default = ["u128-support"]
